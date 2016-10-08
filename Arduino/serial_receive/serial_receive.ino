@@ -1,9 +1,8 @@
 int value[2];
+void make_move_red();
 void make_move_blue();
-int del = 50;
+int del = 150;
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600);
   pinMode(2,OUTPUT);
   pinMode(3,OUTPUT);
   pinMode(4,OUTPUT);
@@ -12,6 +11,7 @@ void setup() {
   pinMode(7,OUTPUT);
   pinMode(8,OUTPUT);
   pinMode(9,OUTPUT);
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -26,36 +26,50 @@ void loop() {
 
 void make_move_red() {
   if(value[0] == 1) {
+    Serial.println(value[0]);
+    Serial.println("Forward");
     digitalWrite(2,HIGH);
     digitalWrite(3,LOW);
-    digitalWrite(4,LOW);
-    digitalWrite(5,LOW);
+    
+    
     delay(del);
     digitalWrite(2,LOW);
+    delay(del);
+    digitalWrite(4,LOW);
+    digitalWrite(5,LOW);
   }
   else if(value[0] == 2) {
+    Serial.println(value[0]);
     digitalWrite(2,LOW);
     digitalWrite(3,HIGH);
-    digitalWrite(4,LOW);
-    digitalWrite(5,LOW);
+    
     delay(del);
     digitalWrite(3,LOW);
+    delay(del);
+    digitalWrite(4,LOW);
+    digitalWrite(5,LOW);
   }
   else if(value[0] == 4) {
+    Serial.println(value[0]);
     digitalWrite(2,LOW);
     digitalWrite(3,LOW);
     digitalWrite(4,HIGH);
     digitalWrite(5,LOW);
+    /*
     delay(del);
     digitalWrite(4,LOW);
+    */
   }
   else if(value[0] == 8) {
+    Serial.println(value[0]);
     digitalWrite(2,LOW);
     digitalWrite(3,LOW);
-    digitalWrite(4,LOW);
+    digitalWrite(4,LOW);    
     digitalWrite(5,HIGH);
+    /*
     delay(del);
     digitalWrite(5,LOW);
+    */
   }
   else if(value[0] == 5) {
     digitalWrite(2,HIGH);
@@ -66,7 +80,7 @@ void make_move_red() {
     digitalWrite(2,LOW);
     digitalWrite(4,LOW);
   }
-  else if(value[1] == 9) {
+  else if(value[0] == 9) {
     digitalWrite(2,HIGH);
     digitalWrite(3,LOW);
     digitalWrite(4,LOW);
@@ -75,7 +89,7 @@ void make_move_red() {
     digitalWrite(2,LOW);
     digitalWrite(5,LOW);
   }
-  else if(value[1] == 6) {
+  else if(value[0] == 6) {
     digitalWrite(2,LOW);
     digitalWrite(3,HIGH);
     digitalWrite(4,HIGH);
@@ -84,7 +98,7 @@ void make_move_red() {
     digitalWrite(3,LOW);
     digitalWrite(4,LOW);
   }
-  else if(value[1] == 10) {
+  else if(value[0] == 10) {
     digitalWrite(2,LOW);
     digitalWrite(3,HIGH);
     digitalWrite(4,LOW);
@@ -97,7 +111,7 @@ void make_move_red() {
     digitalWrite(2,LOW);
     digitalWrite(3,LOW);
     digitalWrite(4,LOW);
-    digitalWrite(5,LOW);
+    digitalWrite(12,LOW);
   }
 }
 
@@ -105,34 +119,42 @@ void make_move_blue() {
   if(value[1] == 1) {
     digitalWrite(6,HIGH);
     digitalWrite(7,LOW);
-    digitalWrite(8,LOW);
-    digitalWrite(9,LOW);
+    
     delay(del);
     digitalWrite(6,LOW);
+    delay(del);
+    digitalWrite(8,LOW);
+    digitalWrite(9,LOW);
   }
   else if(value[1] == 2) {
     digitalWrite(6,LOW);
     digitalWrite(7,HIGH);
-    digitalWrite(8,LOW);
-    digitalWrite(9,LOW);
+    
     delay(del);
     digitalWrite(7,LOW);
+    delay(del);
+    digitalWrite(8,LOW);
+    digitalWrite(9,LOW);
   }
   else if(value[1] == 4) {
     digitalWrite(6,LOW);
     digitalWrite(7,LOW);
     digitalWrite(8,HIGH);
     digitalWrite(9,LOW);
+    /*
     delay(del);
     digitalWrite(8,LOW);
+    */
   }
   else if(value[1] == 8) {
-    digitalWrite(6,LOW);
+    digitalWrite(6,LOW);     
     digitalWrite(7,LOW);
     digitalWrite(8,LOW);
     digitalWrite(9,HIGH);
+    /*
     delay(del);
     digitalWrite(9,LOW);
+    */
   }
   else if(value[1] == 5) {
     digitalWrite(6,HIGH);
