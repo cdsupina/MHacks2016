@@ -7,8 +7,6 @@ import time
 import re
 import random
 import mvmt_val
-import serial
-import struct
 
 #gives the introductory messages to the users.    
 def introduction_messages():
@@ -36,7 +34,6 @@ CHAN = "#twitchplaysbattlebots"
 
 
 current_time = time.time()
-ser = serial.Serial('/dev/ttyACM0',9600)
 
 #viewers need to register for one of two teams
 registered_users = {}
@@ -60,7 +57,6 @@ while True:
         b=mvmt_val.get_mvmt_val(commands,1)
         current_time=time.time()
         print [a,b]
-        ser.write(struct.pack('>BB', a,b))
         #commands=[[0,0,0,0],[0,0,0,0]]      #resets commands list
         
     else:
