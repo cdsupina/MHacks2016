@@ -41,7 +41,7 @@ numBlue=0
 #list of lists for commands. Red team then blue team. Forward, back, left, right
 commands=[[0,0,0,0],[0,0,0,0]]
 command_lookup={'f':0, 'b':1,'l':2,'r':3}
-CHAT_MSG = re.compile(r"^:\w+!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :")
+#CHAT_MSG = re.compile(r"^:\w+!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :")
 
 s = socket.socket()
 s.connect((HOST,PORT))
@@ -53,7 +53,7 @@ while True:
     if time.time()-current_time>1:     
         
         current_time=time.time()
-        ser.write('>BB', get_mvmt_val(0), get_mvmt_val(1))
+        ser.write(struct.pack('>BB', get_mvmt_val(0), get_mvmt_val(1)))
         #commands=[[0,0,0,0],[0,0,0,0]]      #resets commands list
         
     else:
@@ -68,24 +68,24 @@ while True:
                 if numRed<numBlue:
                     registered_users[username]=0
                     numRed+=1
-                    s.send('PRIVMSG %s :%s\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(0).encode('utf-8'))))
+                    s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(0).encode('utf-8'))))
                 elif numBlue<numRed:
                     registered_users[username]=1
                     numBlue+=1
-                    s.send('PRIVMSG %s :%s\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(1).encode('utf-8'))))
+                    s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(1).encode('utf-8'))))
 
                 else:
                     
                     if random.randint(0,1)==0:
                         registered_users[username]=0
                         numRed+=1
-                        s.send('PRIVMSG %s :%s\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(0).encode('utf-8'))))
+                        s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(0).encode('utf-8'))))
 
                     else:
                         registered_users[username]=1
                         numBlue+=1
-                        s.send('PRIVMSG %s :%s\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(1).encode('utf-8'))))
-
+                        s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(1).encode('utf-8'))))
+                        
             else: #if the user is registered
                 if registered_users.has_key(username):
                     message = CHAT_MSG.sub("",line).rstrip()
@@ -98,4 +98,4 @@ while True:
                             commands[registered_users.get(username)][command_lookup.get(message,0)]+=1
             
                     except:
-                        s.send('PRIVMSG %s :%s\n' % (CHAN, '{} has an invalid entry. Remember, only enter f,b,l,or r.\n'.format(username).encode('utf-8')))
+                        s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} has an invalid entry. Remember, only enter f,b,l,or r.\n'.format(username).encode('utf-8')))
