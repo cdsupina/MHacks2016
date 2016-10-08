@@ -1,6 +1,6 @@
 int value[2];
 void make_move_blue();
-int del = 1500;
+int del = 50;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
