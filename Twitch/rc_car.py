@@ -1,32 +1,38 @@
+#@author: Varoon
+#This script is meant to listen to the twitch stream from hot_glue_from_purdue, interact with the 
+#players in the stream, and send the "consensus" of the players to an arduino to control remote cars.
+# This will also assign and maintain teams.  
 import socket
 import time
 import re
 import serial
 import struct
 import random
+from sys import exit
 
 
-def get_mvmt_val(team):
+# returns 0 if no inputs from twitch. Otherwise outputs distinct value for each cardinal and intercardinal 
+# direction. All values between 0 and 10, inclusive. Powers of two guarantee distinctiveness under addition
+def get_mvmt_val(team):    
     for i in commands[team]:
         if i!=0:
-            print 2**(commands[team].index(max(commands[team][0:2])))
-            print 2**(commands[team].index(max(commands[team][2:4])))
-            return 2**(commands[team].index(max(commands[team][0:2])))+2**(commands[team].index(max(commands[team][2:4])))
+            return 2**(commands[team].index(max(commands[team][0:2])))+2**(2+commands[team][2:4].index(max(commands[team][2:4])))
     return 0
 
 HOST = "irc.twitch.tv"
 PORT = 6667
 
 #FOR SIMPLICITY, 0=RED_TEAM, 1=BLUE TEAM
+teams={0:'Red',1:'Blue'}
 #From the moderator channel
 NICK = "sumobotsteamred"
 PASS = "oauth:6cp3so6qpa1rqwdy1bva9nqu0deswg"
-print 'hello'
+
 #From the streamer channel
 CHAN = "#hot_glue_from_purdue"
 
 current_time = time.time()
-#ser = serial.Serial('/dev/ttyACM0',9600)
+ser = serial.Serial('/dev/ttyACM0',9600)
 
 #viewers need to register for one of two teams
 registered_users = {}
@@ -45,10 +51,11 @@ s.send("JOIN {}\r\n".format(CHAN).encode("utf-8"))
 
 while True:
     if time.time()-current_time>1:     
-        #ser.write(struct.pack('>BB',get_mvmt_val(0),get_mvmt_val(1)))
+        
         current_time=time.time()
-        print "asdf{}, {}asdf".format(get_mvmt_val(0), get_mvmt_val(1))
-        commands=[[0,0,0,0],[0,0,0,0]]
+        ser.write('>BB', get_mvmt_val(0), get_mvmt_val(1))
+        #commands=[[0,0,0,0],[0,0,0,0]]      #resets commands list
+        
     else:
         line = s.recv(1024).decode("utf-8")
         if line == "PING :tmi.twitch.tv\r\n":
@@ -61,17 +68,24 @@ while True:
                 if numRed<numBlue:
                     registered_users[username]=0
                     numRed+=1
+                    s.send('PRIVMSG %s :%s\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(0).encode('utf-8'))))
                 elif numBlue<numRed:
                     registered_users[username]=1
                     numBlue+=1
+                    s.send('PRIVMSG %s :%s\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(1).encode('utf-8'))))
+
                 else:
                     
-                    if random.randint(0,1):
+                    if random.randint(0,1)==0:
                         registered_users[username]=0
                         numRed+=1
+                        s.send('PRIVMSG %s :%s\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(0).encode('utf-8'))))
+
                     else:
                         registered_users[username]=1
                         numBlue+=1
+                        s.send('PRIVMSG %s :%s\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(1).encode('utf-8'))))
+
             else: #if the user is registered
                 if registered_users.has_key(username):
                     message = CHAT_MSG.sub("",line).rstrip()
@@ -79,10 +93,9 @@ while True:
                     #increments commands list if possible
                     try:
                         if message == "stop":
-                            quit()
+                            quit('stopped by user')
                         else:
                             commands[registered_users.get(username)][command_lookup.get(message,0)]+=1
-                              
-                                 
+            
                     except:
-                        print 'There was an error. Send this in the twitch chat.'
+                        s.send('PRIVMSG %s :%s\n' % (CHAN, '{} has an invalid entry. Remember, only enter f,b,l,or r.\n'.format(username).encode('utf-8')))
