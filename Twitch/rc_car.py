@@ -3,9 +3,16 @@ import time
 import re
 import serial
 import struct
-import datetime
-import time
 import random
+
+
+def get_mvmt_val(team):
+    for i in commands[team]:
+        if i!=0:
+            print 2**(commands[team].index(max(commands[team][0:2])))
+            print 2**(commands[team].index(max(commands[team][2:4])))
+            return 2**(commands[team].index(max(commands[team][0:2])))+2**(commands[team].index(max(commands[team][2:4])))
+    return 0
 
 HOST = "irc.twitch.tv"
 PORT = 6667
@@ -37,12 +44,10 @@ s.send("NICK {}\r\n".format(NICK).encode("utf-8"))
 s.send("JOIN {}\r\n".format(CHAN).encode("utf-8"))
 
 while True:
-    if time.time()-current_time>1:
-        print[2**(commands[0].index(max(commands[0][0:2])))+2**(commands[0].index(max(commands[0][2:4]))) 
-            ,2**(commands[1].index(max(commands[1][0:2])))+2**(commands[1].index(max(commands[1][2:4])))]
-        #ser.write(struct.pack('>BB',2**(commands[0].index(max(commands[0][0:2])))+2**(commands[0].index(max(commands[0][2:4]))) 
-        #    ,2**(commands[1].index(max(commands[1][0:2])))+2**(commands[1].index(max(commands[1][2:4])))))
+    if time.time()-current_time>1:     
+        #ser.write(struct.pack('>BB',get_mvmt_val(0),get_mvmt_val(1)))
         current_time=time.time()
+        print "asdf{}, {}asdf".format(get_mvmt_val(0), get_mvmt_val(1))
         commands=[[0,0,0,0],[0,0,0,0]]
     else:
         line = s.recv(1024).decode("utf-8")
@@ -73,11 +78,11 @@ while True:
                     
                     #increments commands list if possible
                     try:
-                        commands[registered_users.get(username)][command_lookup.get(message,0)]+=1
+                        if message == "stop":
+                            quit()
+                        else:
+                            commands[registered_users.get(username)][command_lookup.get(message,0)]+=1
+                              
+                                 
                     except:
                         print 'There was an error. Send this in the twitch chat.'
-                
-               
-                        
-    
-            
