@@ -26,9 +26,6 @@ def introduction_messages():
 
 
 '''
-#basic binary transformation
-
-team_won=False
 
 def pick_other_team(x):
     if int(x)==1:
@@ -48,13 +45,7 @@ def loop_a():
 
 
 
-    while team_won==False:
-
-        print team_won
-        with open('win.txt', 'r') as f:
-            f.seek(0)
-            if f.readline()=='won':
-                return
+    while True:
         line = s.recv(1024).decode("utf-8")
         if line == "PING :tmi.twitch.tv\r\n":
             s.send("PONG :tmi.twitch.tv\r\n".encode("utf-8"))
@@ -87,48 +78,39 @@ def loop_a():
             else: #if the user is registered
             #WIN CONDITION!!
                 message=''
-                print username==NICK
-                if registered_users.has_key(username) or username==NICK:
+
+                if registered_users.has_key(username):
                     message = CHAT_MSG.sub("",line).rstrip()
                     print 'message: '+message
-                if 'Congratulations! Please give' in message:
-                    print 'WILL EXIT LOOP A'
-                    return
-
 
                     #increments commands list if possible
 
-                elif command_lookup.has_key(message):
-                    commands_list[registered_users.get(username)][command_lookup.get(message)]+=1
-                    print commands_list
-                    if registered_users.get(username)==0:
-                        ser.write(struct.pack('>BB', mvmt_val.anarchy_val(commands_list,0),0))
-                    else:
-                        ser.write(struct.pack('>BB', 0, mvmt_val.anarchy_val(commands_list,1)))
-                    print('team: '+str(registered_users.get(username)))
-                    print('command: '+ str(mvmt_val.anarchy_val(commands_list,registered_users.get(username))))
-                    commands_list=[[0,0,0,0],[0,0,0,0]]
+                    if command_lookup.has_key(message):
+                        commands_list[registered_users.get(username)][command_lookup.get(message)]+=1
+                        print commands_list
+                        if registered_users.get(username)==0:
+                            ser.write(struct.pack('>BB', mvmt_val.anarchy_val(commands_list,0),0))
+                        else:
+                            ser.write(struct.pack('>BB', 0, mvmt_val.anarchy_val(commands_list,1)))
+                        print('team: '+str(registered_users.get(username)))
+                        print('command: '+ str(mvmt_val.anarchy_val(commands_list,registered_users.get(username))))
+                        commands_list=[[0,0,0,0],[0,0,0,0]]
 
 
 #if data is 0, red team's post is knocked over and blue team wins. Vice versa. Send message to twitch.
 def loop_b():
 
-    print team_won
-    while team_won==False:
-        print team_won
+    while True:
+
         data = ser.readline()[:-2]
         if data:
             x=pick_other_team(data)
             s.send('PRIVMSG %s :%s\r\n' % (CHAN, 'The {} team won! Congratulations! Please give us time to reset.'.format(teams.get(x)).encode('utf-8')))
-            global team_won
-            team_won=True
             print 'TEAM WON IS TRUE!!!'
-            with open('win.txt', 'w+') as f:
-                f.write('won\n')
             return
 
 #global variable
-team_won=False
+
 CHAN = "#twitchplaysbattlebots"
 teams={0:'Red',1:'Blue'}
 HOST = "irc.twitch.tv"
