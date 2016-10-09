@@ -1,6 +1,7 @@
 #@author: Varoon
 #This script is meant to listen to the twitch stream from hot_glue_from_purdue, interact with the 
-#players in the stream, and send the "consensus" of the players to the console. Mainly for testing
+#players in the stream, and send the "consensus" of the players to the console. Allows cars to go in ordinal and interordinal direction.
+#for n players playing, will get the "consensus" of n messages and push to arduino.
 # This will also assign and maintain teams.  
 import socket
 import time
@@ -22,6 +23,10 @@ def introduction_messages():
     time.sleep(2)
     s.send('PRIVMSG %s :The team whose car leaves the ring loses. Good Luck!\r\n' %(CHAN))
 
+#want to push results to arduino every x messages where x is returned below. If 1 player, same as anarchy.
+# when 2 players, similar to anarchy. add 1 to account for corner case of 0. 
+def push_to_arduino(num_players):
+    return num_players+1
 HOST = "irc.twitch.tv"
 PORT = 6667
 
@@ -34,8 +39,7 @@ PASS = "oauth:0dyincbnyg1swo4y4eirxn6iczixdo"
 #From the streamer channel
 CHAN = "#twitchplaysbattlebots"
 
-
-current_time = time.time()
+count=0     #count total number of messages
 ser = serial.Serial('/dev/ttyACM0',9600)
 
 #viewers need to register for one of two teams
@@ -55,14 +59,15 @@ s.send("NICK {}\r\n".format(NICK).encode("utf-8"))
 s.send("JOIN {}\r\n".format(CHAN).encode("utf-8"))
 
 while True:
-    if time.time()-current_time>2:     
-        a=mvmt_val.get_mvmt_val(commands,0)
-        b=mvmt_val.get_mvmt_val(commands,1)
-        current_time=time.time()
-        print [a,b]
+    #if there are players and [totalMsgs]%[numPlayers+1]==1, push to arduino. 
+    if len(registered_users)>0 and count%push_to_arduino(len(registered_users))==1:        
+        a=mvmt_val.democracy_val(commands,0)
+        b=mvmt_val.democracy_val(commands,1)
+        print str([a,b])
         ser.write(struct.pack('>BB', a,b))
-        #commands=[[0,0,0,0],[0,0,0,0]]      #resets commands list
-        
+        commands=[[0,0,0,0],[0,0,0,0]]      #resets commands list
+        count+=1
+    #else keep listening for messages, assigning to teams, etc.   
     else:
         line = s.recv(1024).decode("utf-8")
         if line == "PING :tmi.twitch.tv\r\n":
@@ -93,14 +98,14 @@ while True:
                         numBlue+=1
                         s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(1).encode('utf-8'))))
                         
-            else: #if the user is registered
-
+            else: #if the user is registered               
                 if registered_users.has_key(username):
                     message = CHAT_MSG.sub("",line).rstrip()
                     
                     #increments commands list if possible
                     try:
                         if command_lookup.has_key(message):
+                            count +=1   #extra message counted
                             commands[registered_users.get(username)][command_lookup.get(message,0)]+=1
           
                     except:
