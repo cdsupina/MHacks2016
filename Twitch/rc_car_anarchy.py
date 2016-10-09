@@ -3,7 +3,6 @@
 #players in the stream, and send the "consensus" of the players to the console. Mainly for testing
 # This will also assign and maintain teams.
 import socket
-import time
 import re
 import random
 import mvmt_val
@@ -22,21 +21,20 @@ def introduction_messages():
     s.send('PRIVMSG %s :The collective decisions of your team will decide your car\'s movement.\r\n' %(CHAN))
     time.sleep(2)
     s.send('PRIVMSG %s :The team whose car leaves the ring loses. Good Luck!\r\n' %(CHAN))
+
+
+
+
 '''
+#basic binary transformation
+
+team_won=False
+
+def pick_other_team(x):
+    if int(x)==1:
+        return 0
+    return 1
 def loop_a():
-    HOST = "irc.twitch.tv"
-    PORT = 6667
-
-    #FOR SIMPLICITY, 0=RED_TEAM, 1=BLUE TEAM
-    teams={0:'Red',1:'Blue'}
-    #From the moderator channel
-    NICK = "twitchplaysbattlebots"
-    PASS = "oauth:0dyincbnyg1swo4y4eirxn6iczixdo"
-
-    #From the streamer channel
-    CHAN = "#twitchplaysbattlebots"
-
-    ser = serial.Serial('/dev/ttyACM0',9600)
 
     #viewers need to register for one of two teams
     registered_users = {}
@@ -48,69 +46,110 @@ def loop_a():
     command_lookup={'f':0, 'b':1,'l':2,'r':3}
     CHAT_MSG = re.compile(r"^:\w+!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :")
 
-    s = socket.socket()
-    s.connect((HOST,PORT))
-    s.send("PASS {}\r\n".format(PASS).encode("utf-8"))
-    s.send("NICK {}\r\n".format(NICK).encode("utf-8"))
-    s.send("JOIN {}\r\n".format(CHAN).encode("utf-8"))
 
-    while True:
 
-            line = s.recv(1024).decode("utf-8")
-            if line == "PING :tmi.twitch.tv\r\n":
-                s.send("PONG :tmi.twitch.tv\r\n".encode("utf-8"))
-            else:
-                username = re.search(r"\w+",line).group(0)
+    while team_won==False:
 
-                # if user is not registered. All cases handle bug where "tmi" (name of twitch irc server) registers as player
-                if not registered_users.has_key(username) and username!="tmi" and username!=NICK:
-                    if numRed<numBlue:
+        print team_won
+        with open('win.txt', 'r') as f:
+            f.seek(0)
+            if f.readline()=='won':
+                return
+        line = s.recv(1024).decode("utf-8")
+        if line == "PING :tmi.twitch.tv\r\n":
+            s.send("PONG :tmi.twitch.tv\r\n".encode("utf-8"))
+        else:
+            username = re.search(r"\w+",line).group(0)
+
+            # if user is not registered. All cases handle bug where "tmi" (name of twitch irc server) registers as player
+            if not registered_users.has_key(username) and username!="tmi" and username!=NICK:
+                if numRed<numBlue:
+                    registered_users[username]=0
+                    numRed+=1
+                    s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(0).encode('utf-8'))))
+                elif numBlue<numRed:
+                    registered_users[username]=1
+                    numBlue+=1
+                    s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(1).encode('utf-8'))))
+
+                else:
+
+                    if random.randint(0,1)==0:
                         registered_users[username]=0
                         numRed+=1
                         s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(0).encode('utf-8'))))
-                    elif numBlue<numRed:
+
+                    else:
                         registered_users[username]=1
                         numBlue+=1
                         s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(1).encode('utf-8'))))
 
+            else: #if the user is registered
+            #WIN CONDITION!!
+                message=''
+                print username==NICK
+                if registered_users.has_key(username) or username==NICK:
+                    message = CHAT_MSG.sub("",line).rstrip()
+                    print 'message: '+message
+                if 'Congratulations! Please give' in message:
+                    print 'WILL EXIT LOOP A'
+                    return
+
+
+                    #increments commands list if possible
+
+                elif command_lookup.has_key(message):
+                    commands_list[registered_users.get(username)][command_lookup.get(message)]+=1
+                    print commands_list
+                    if registered_users.get(username)==0:
+                        ser.write(struct.pack('>BB', mvmt_val.anarchy_val(commands_list,0),0))
                     else:
+                        ser.write(struct.pack('>BB', 0, mvmt_val.anarchy_val(commands_list,1)))
+                    print('team: '+str(registered_users.get(username)))
+                    print('command: '+ str(mvmt_val.anarchy_val(commands_list,registered_users.get(username))))
+                    commands_list=[[0,0,0,0],[0,0,0,0]]
 
-                        if random.randint(0,1)==0:
-                            registered_users[username]=0
-                            numRed+=1
-                            s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(0).encode('utf-8'))))
 
-                        else:
-                            registered_users[username]=1
-                            numBlue+=1
-                            s.send('PRIVMSG %s :%s\r\n' % (CHAN, '{} is now on the {} Team'.format(username, teams.get(1).encode('utf-8'))))
-
-                else: #if the user is registered
-
-                    if registered_users.has_key(username):
-                        message = CHAT_MSG.sub("",line).rstrip()
-
-                        #increments commands list if possible
-
-                        if command_lookup.has_key(message):
-                            commands_list[registered_users.get(username)][command_lookup.get(message)]+=1
-                            print commands_list
-                            if registered_users.get(username)==0:
-                                ser.write(struct.pack('>BB', mvmt_val.anarchy_val(commands_list,0),0))
-                            else:
-                                ser.write(struct.pack('>BB', 0, mvmt_val.anarchy_val(commands_list,1)))
-                            print('team: '+str(registered_users.get(username)))
-                            print('command: '+ str(mvmt_val.anarchy_val(commands_list,registered_users.get(username))))
-                            commands_list=[[0,0,0,0],[0,0,0,0]]
-
+#if data is 0, red team's post is knocked over and blue team wins. Vice versa. Send message to twitch.
 def loop_b():
-    ser = serial.Serial('/dev/ttyACM0',9600)
-    while True:
+
+    print team_won
+    while team_won==False:
+        print team_won
         data = ser.readline()[:-2]
         if data:
-            print(data)
+            x=pick_other_team(data)
+            s.send('PRIVMSG %s :%s\r\n' % (CHAN, 'The {} team won! Congratulations! Please give us time to reset.'.format(teams.get(x)).encode('utf-8')))
+            global team_won
+            team_won=True
+            print 'TEAM WON IS TRUE!!!'
+            with open('win.txt', 'w+') as f:
+                f.write('won\n')
+            return
+
+#global variable
+team_won=False
+CHAN = "#twitchplaysbattlebots"
+teams={0:'Red',1:'Blue'}
+HOST = "irc.twitch.tv"
+PORT = 6667
+NICK = "twitchplaysbattlebots"
+PASS = "oauth:0dyincbnyg1swo4y4eirxn6iczixdo"
+
+s = socket.socket()
+s.connect((HOST,PORT))
+s.send("PASS {}\r\n".format(PASS).encode("utf-8"))
+s.send("NICK {}\r\n".format(NICK).encode("utf-8"))
+s.send("JOIN {}\r\n".format(CHAN).encode("utf-8"))
+
+for i in range(1,11):
+    string = '/dev/ttyACM{}'.format(i)
+    try:
+        ser=serial.Serial(string,9600)
+        break
+    except Exception as e:
+        continue
+    print 'Could not find the serial port'
+print ser.name
 Process(target = loop_a).start()
 Process(target = loop_b).start()
-
-                        #t_end = time.time() + 5
-                    #    while time.time() < t_end:

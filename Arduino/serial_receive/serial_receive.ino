@@ -56,7 +56,7 @@ void make_move_red() {
     //Serial.println(value[0]);
     digitalWrite(2,HIGH);
     digitalWrite(3,LOW);
-    delay(del);
+    delay(del2);
     digitalWrite(2,LOW);
     delay(del);
     digitalWrite(4,LOW);
@@ -66,7 +66,7 @@ void make_move_red() {
     //Serial.println(value[0]);
     digitalWrite(2,LOW);
     digitalWrite(3,HIGH);
-    delay(del);
+    delay(del2);
     digitalWrite(3,LOW);
     delay(del);
     digitalWrite(4,LOW);
@@ -90,7 +90,7 @@ void make_move_red() {
     digitalWrite(5,LOW);
     delay(del2);
     digitalWrite(2,HIGH);
-    delay(del);
+    delay(del2);
     digitalWrite(2,LOW);
     delay(del);
     digitalWrite(4,LOW);
@@ -101,7 +101,7 @@ void make_move_red() {
     digitalWrite(5,HIGH);
     delay(del2);
     digitalWrite(2,HIGH);
-    delay(del);
+    delay(del2);
     digitalWrite(2,LOW);
     delay(del);
     digitalWrite(5,LOW);
@@ -112,7 +112,7 @@ void make_move_red() {
     digitalWrite(5,LOW);
     delay(del2);
     digitalWrite(3,HIGH);
-    delay(del);
+    delay(del2);
     digitalWrite(3,LOW);
     delay(del);
     digitalWrite(4,LOW);
@@ -123,7 +123,7 @@ void make_move_red() {
     digitalWrite(5,HIGH);
     delay(del2);
     digitalWrite(3,HIGH);
-    delay(del);
+    delay(del2);
     digitalWrite(3,LOW);
     delay(del);
     digitalWrite(5,LOW);
@@ -143,7 +143,7 @@ void make_move_blue() {
     digitalWrite(6,HIGH);
     digitalWrite(7,LOW);
     
-    delay(del);
+    delay(del2);
     digitalWrite(6,LOW);
     delay(del);
     digitalWrite(8,LOW);
@@ -153,7 +153,7 @@ void make_move_blue() {
     digitalWrite(6,LOW);
     digitalWrite(7,HIGH);
     
-    delay(del);
+    delay(del2);
     digitalWrite(7,LOW);
     delay(del);
     digitalWrite(8,LOW);
@@ -177,7 +177,7 @@ void make_move_blue() {
     digitalWrite(9,LOW);
     delay(del2);
     digitalWrite(6,HIGH);
-    delay(del);
+    delay(del2);
     digitalWrite(6,LOW);
     delay(del);
     digitalWrite(8,LOW);
@@ -188,7 +188,7 @@ void make_move_blue() {
     digitalWrite(9,HIGH);
     delay(del2);
     digitalWrite(6,HIGH);
-    delay(del);
+    delay(del2);
     digitalWrite(6,LOW);
     delay(del);
     digitalWrite(9,LOW);
@@ -199,7 +199,7 @@ void make_move_blue() {
     digitalWrite(9,LOW);
     delay(del2);
     digitalWrite(7,HIGH);
-    delay(del);
+    delay(del2);
     digitalWrite(7,LOW);
     delay(del);
     digitalWrite(8,LOW);
@@ -210,7 +210,7 @@ void make_move_blue() {
     digitalWrite(9,HIGH);
     delay(del2);
     digitalWrite(7,HIGH);
-    delay(del);
+    delay(del2);
     digitalWrite(7,LOW);
     delay(del);
     digitalWrite(9,LOW);
