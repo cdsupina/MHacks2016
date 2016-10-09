@@ -3,6 +3,13 @@ void make_move_red();
 void make_move_blue();
 int del = 150;
 int del2 = 100;
+int pin1 = A0;
+int pin2 = A1;
+int val1;
+int val2;
+boolean check1 = false;
+boolean check2 = false;
+
 void setup() {
   pinMode(2,OUTPUT);
   pinMode(3,OUTPUT);
@@ -20,14 +27,33 @@ void loop() {
     for(int i=0;i<2;i++) {
         value[i] = Serial.read();
     }
+    //check if vibration sensor triggered
+    //if yes print true
+    //if no print false
     make_move_red();
     make_move_blue();
    }
+   val1 = analogRead(pin1);
+   val2 = analogRead(pin2);
+   delay(500);
+   //Serial.println(val1);
+   //Serial.println(val2);
+   
+   
+   if(val2 > 300) {
+     check2 = true;
+     Serial.println("1");
+   }
+   if(val1 > 300) { 
+    check1 =true;
+    Serial.println("0");
+  }
+  
 }
 
 void make_move_red() {
   if(value[0] == 1) {
-    Serial.println(value[0]);
+    //Serial.println(value[0]);
     digitalWrite(2,HIGH);
     digitalWrite(3,LOW);
     delay(del);
@@ -37,7 +63,7 @@ void make_move_red() {
     digitalWrite(5,LOW);
   }
   else if(value[0] == 2) {
-    Serial.println(value[0]);
+    //Serial.println(value[0]);
     digitalWrite(2,LOW);
     digitalWrite(3,HIGH);
     delay(del);
@@ -111,7 +137,9 @@ void make_move_red() {
 }
 
 void make_move_blue() {
+  //Serial.print("in blue");
   if(value[1] == 1) {
+    //Serial.print("in forward");
     digitalWrite(6,HIGH);
     digitalWrite(7,LOW);
     
