@@ -9,7 +9,8 @@ import mvmt_val
 import serial
 import struct
 from multiprocessing import Process
-'''#gives the introductory messages to the users.
+import time
+#gives the introductory messages to the users.
 
 def introduction_messages():
     s.send('PRIVMSG %s :Welcome to the game!\r\n' %(CHAN))
@@ -22,10 +23,6 @@ def introduction_messages():
     time.sleep(2)
     s.send('PRIVMSG %s :The team whose car leaves the ring loses. Good Luck!\r\n' %(CHAN))
 
-
-
-
-'''
 
 def pick_other_team(x):
     if int(x)==1:
@@ -133,5 +130,6 @@ for i in range(1,11):
         continue
     print 'Could not find the serial port'
 print ser.name
+introduction_messages()
 Process(target = loop_a).start()
 Process(target = loop_b).start()
